@@ -1,7 +1,7 @@
 #Import
 import sys
-import geoUI # файл дизайна
-import dialog
+import geoUI # GUI главного окна
+import dialog # Диалоговое окно
 
 from PyQt5 import QtWidgets
 from openpyxl import load_workbook
@@ -15,16 +15,15 @@ class Dialog(QtWidgets.QDialog, dialog.Ui_Dialog):
         self.btn.clicked.connect(self.choise)
         self.id1 = 0
         self.id2 = 0
-        #self.name_1.setText('')
-        #self.name_2.setText('')
 
+    #подставляем названия в соотв. поля
     def setName(self, name1, name2, id1, id2):
         self.name_1.setText(name1)
         self.name_2.setText(name2)
         self.id1 = id1
         self.id2 = id2
 
-
+    #обработка чекбокса - выбор варианта
     def choise(self):
         if self.name_1.checkState() == 2:
             Dialog.done(self, self.id1)
@@ -46,25 +45,28 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
         self.excel_to_list()
         self.duble_words = 0
 
+    #считываем эксель файл и записываем названия городов в список all_cities
     def excel_to_list(self):
         for i in range(2, 1257): # если файл меняется надо посчитать количество строк в екселе и заменить 1257
             self.all_cities.append(self.get_cell(i-2, 2))
-        #print(self.all_cities[550:555])
 
-    def get_list_cities(self): # убрать лишние знаки, если список городов ввели через запятую
-        #namesCities = self.cities.toPlainText()
-        self.list_cities = self.cities.toPlainText().title().split() #cities - название поля в GUI
-        #print(len(self.list_cities))
+    #обработка введенных данных (названия городов) и запись в список list_cities
+    def get_list_cities(self):
+        # убираем лишние знаки, если список городов ввели через запятую
+        #cities - название поля в GUI
+        self.list_cities = self.cities.toPlainText().title().split()
 
     #метод для проверки количества городов например Москва 2 шт
     #поиск области в дубликатах, по соседям перед этим городом и после,
-    #проверяем на совподении по области 3й столбей в экселе \\ мирный вельск
+    #проверяем на совподении по области 3й столбей в экселе
+    #поиск дубликатов:
+    #в списке введенных городов
+    #в списке всех городов
     def duplicate_check(self, search):
         try:
             num_row = self.all_cities.index(search)
-            #print('1',  self.get_cell(num_row, 2))
         except ValueError:
-            #обработка события когда город последний в списке и он не нашёлся то в  х будет ошибка
+            #обработка события когда город последний в списке и он не нашёлся то в х будет ошибка
             #т.к. тут -  self.list_cities[self.list_cities.index(search) + 1] ничего не будет IndexError
             try:
                 x = self.list_cities[self.list_cities.index(search)] + ' '\
@@ -73,17 +75,15 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                 self.not_found_list.append(search)
                 return -1
 
-
-
             #проверка есть ли вообще теперь такой город, если нет то записываем
             #его в отдельный список и когда найдутся все города выводим те которые не нашли
+            #not_found_list - список ненайденных городов
             try:
                 num_row = self.all_cities.index(x)
             except ValueError:
                 self.not_found_list.append(search)
                 return -1
             else:
-                #print(x)
                 self.duble_words += 1
                 index = self.list_cities.index(search)
                 self.list_cities.pop(index)
@@ -91,28 +91,25 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                 self.list_cities.insert(index, x)
                 num_row = self.all_cities.index(x)
 
-
-            #print(self.list_cities)
-        else:
-            pass
+        #else:
+            #print('95 строка')
 
 
-#проверить есть ли в веденном списке городов дубликаты, если есть то выбираешь
-#первый потом второй
-#если в веденном списке нет дубликатов но они есть в общем, вызвать диалоговое
-#окно с выбором города( указав облассть и страну)
-#перед этим сравнив города до и после дубликата, если совпадений нет или
-#дубликат есть у первого города в списке то выводим диаоодиалоговое окнокно
+        #проверить есть ли в веденном списке городов дубликаты, если есть то выбираешь
+        #первый потом второй
+        #если в веденном списке нет дубликатов но они есть в общем, вызвать диалоговое
+        #окно с выбором города( указав облассть и страну)
+        #перед этим сравнив города до и после дубликата, если совпадений нет или
+        #дубликат есть у первого города в списке то выводим диаоодиалоговое окнокно
+        #с выбором города
         try:
             double_row = self.all_cities.index(search, num_row + 1)
-            #print('2', self.get_cell(double_row, 2))
             # сравнить названия дубликатов
         except ValueError:
-            row = num_row + 2#номер строки в ексель файле
+            row = num_row + 2 #номер строки в ексель файле
             self.list_rows.append(row)
-            return self.get_cell(num_row, 1)#возвращаем айди из экселя
-        else:# если чекбокс активен то москва и питер с областями(активный чекбокс = 2)
-            #сравнить названия дудубликатов
+            return self.get_cell(num_row, 1) #возвращаем айди из экселя
+        else: # если чекбокс активен то москва и питер с областями(активный чекбокс = 2)
             if self.get_cell(num_row, 2) != self.get_cell(double_row, 2):
                 return self.get_cell(num_row, 1)
             else:
@@ -125,51 +122,41 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                 elif (self.region.checkState() == 0 and self.get_cell(num_row, 2) == 'Санкт-Петербург'):
                     return 756
                 else:
-    #воронеж! города из 2х слов нижний новгород
+                    #обработка названий из 2х слов нижний новгород
                     #return(num_row + 2, double_row + 2)#номера строк в ексель файле
-                    # если 2 города нашлось, то делаем выбор по области
+                    #если 2 города нашлось, то делаем выбор по области
                     if len(self.list_rows) == 0:
                         try:
                             x = self.list_cities[self.list_cities.index(search) + 1]
                         except IndexError:
-                            #print(num_row, double_row)
-                            #переводим номер строки в название города и информацию о нем
-                            #выносим в отдельный метод | возвращаем строку
+                            #переводим номер строки в название города и
+                            #информацию о нем
+                            #вызов дивлогового окна
+                            return self.call_dialog(num_row, double_row)
 
-                            first = self.row_to_name(num_row)
-                            second = self.row_to_name(double_row)
-
-                            #вызов дивлогового окна нажо вынести в отдельный метод
-                            dialog = Dialog()
-                            dialog.setName(first, second, self.get_cell(num_row, 1), self.get_cell(double_row, 1))
-                            y = dialog.exec_()
-                            return y
-                            #print(y)
-                            #x = self.id_to_name(y)
-
-
-                        #из id_to_name возвращается название и в ласт ищется первое совпадение
+                        #из id_to_name возвращается название и в last ищется первое совпадение
                         last = self.all_cities.index(x)
-                        #print(last)
                     elif self.list_rows[-1] != 0:
                         last = self.list_rows[-1] - 2# последний найденный город
                     #(-2 т.к в get_cell к строке добавляю 2)
-        #вельск мирный
                     if self.get_cell(last, 3) == self.get_cell(num_row, 3):
                         return self.get_cell(num_row, 1)
                     elif self.get_cell(last, 3) == self.get_cell(double_row, 3):
                         return self.get_cell(double_row, 1)
                     else:
-                        #print('123')
                         #вызов дивлогового окна
-                        first = self.row_to_name(num_row)
-                        second = self.row_to_name(double_row)
-                        dialog = Dialog()
-                        dialog.setName(first, second, self.get_cell(num_row, 1), self.get_cell(double_row, 1))
-                        y = dialog.exec_()
-                        return y
+                        return self.call_dialog(num_row, double_row)
                         #num_row - первый город - name_1
                         #double_row - второй город - name_2
+
+    #вызов дивлогового окна
+    def call_dialog(self, num_row, double_row):
+        first = self.row_to_name(num_row)
+        second = self.row_to_name(double_row)
+        dialog = Dialog()
+        dialog.setName(first, second, self.get_cell(num_row, 1), self.get_cell(double_row, 1))
+        y = dialog.exec_()
+        return y
 
     def get_cell(self, row, column):
         return (self.sheet.cell(row=row + 2, column=column).value)
