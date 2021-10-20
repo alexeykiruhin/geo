@@ -183,19 +183,11 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                 continue
             self.id.insertPlainText(str(id) + ',')
             search_count += 1
-            #print(id)
-            #print(self.region.checkState())
-        #print(self.not_found_list)
-        #not_found_str = ''
-        #for nf in self.not_found_list:
-            #not_found_str += nf + ' '
+
         self.not_found.insertPlainText(self.nf_list_to_str(self.not_found_list))
         self.label.setText('Cities:' + ' ' + str(len(self.list_cities)))
-        self.label_2.setText('Id:' + ' ' + str(search_count))
-        self.label_3.setText('Сities not found:' + ' ' + str(len(self.not_found_list)))
-        print(search_count)#количество найденных
-        print(self.not_found_list)#количество ненайденных вывод в отдельное окно
-        print(self.duble_words)#город из 2х слов
+        self.label_2.setText('Id:' + ' ' + str(search_count))#количество найденных
+        self.label_3.setText('Сities not found:' + ' ' + str(len(self.not_found_list)))#количество ненайденных вывод в отдельное окно
 
     def nf_list_to_str(self, nf_list):
             print('nf_list')
@@ -229,14 +221,10 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
 
     def row_to_name(self, row):
         name_city = self.get_cell(row, 2)
-        #print('name_city' + ' ' + name_city)
         id_region = self.get_cell(row, 3)
         name_region = self.id_to_name(id_region)
-        #print('name_region' + ' ' + name_region)
-        # возможно добавить еще и страну
         id_country = self.get_cell(self.name_to_row(name_region), 3)
         name_country = self.id_to_name(id_country)
-        #
         #склеиваем данные и возвращаем строку
         return name_city + ' ' + name_region + ' ' + name_country
 
