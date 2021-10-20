@@ -1,4 +1,5 @@
 #Import
+import re
 import sys
 import geoUI # GUI главного окна
 import dialog # Диалоговое окно
@@ -54,7 +55,10 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
     def get_list_cities(self):
         # убираем лишние знаки, если список городов ввели через запятую
         #cities - название поля в GUI
-        self.list_cities = self.cities.toPlainText().title().split()
+        reg = " |,"
+
+        cit = self.cities.toPlainText().title()
+        self.list_cities = re.split(reg, cit)
 
     #метод для проверки количества городов например Москва 2 шт
     #поиск области в дубликатах, по соседям перед этим городом и после,
@@ -72,6 +76,8 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                 x = self.list_cities[self.list_cities.index(search)] + ' '\
                  + self.list_cities[self.list_cities.index(search) + 1]
             except IndexError:
+                if search == '':
+                    return -1
                 self.not_found_list.append(search)
                 return -1
 
@@ -81,6 +87,8 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
             try:
                 num_row = self.all_cities.index(x)
             except ValueError:
+                if search == '':
+                    return -1
                 self.not_found_list.append(search)
                 return -1
             else:
@@ -135,7 +143,8 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                             return self.call_dialog(num_row, double_row)
 
                         #из id_to_name возвращается название и в last ищется первое совпадение
-                        last = self.all_cities.index(x)
+                        #print(x)
+                        #last = self.all_cities.index(x)
                     elif self.list_rows[-1] != 0:
                         last = self.list_rows[-1] - 2# последний найденный город
                     #(-2 т.к в get_cell к строке добавляю 2)
@@ -177,16 +186,24 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
             #print(id)
             #print(self.region.checkState())
         #print(self.not_found_list)
-        not_found_str = ''
-        for nf in self.not_found_list:
-            not_found_str += nf + ' '
-        self.not_found.insertPlainText(not_found_str)
+        #not_found_str = ''
+        #for nf in self.not_found_list:
+            #not_found_str += nf + ' '
+        self.not_found.insertPlainText(self.nf_list_to_str(self.not_found_list))
         self.label.setText('Cities:' + ' ' + str(len(self.list_cities)))
         self.label_2.setText('Id:' + ' ' + str(search_count))
         self.label_3.setText('Сities not found:' + ' ' + str(len(self.not_found_list)))
         print(search_count)#количество найденных
-        print(len(self.not_found_list))#количество ненайденных вывод в отдельное окно
+        print(self.not_found_list)#количество ненайденных вывод в отдельное окно
         print(self.duble_words)#город из 2х слов
+
+    def nf_list_to_str(self, nf_list):
+            print('nf_list')
+            print(nf_list)
+            not_found_str = ''
+            for nf in nf_list:
+                not_found_str += nf + ' '
+            return not_found_str
 
     def clear_fields(self):
         self.cities.clear()
