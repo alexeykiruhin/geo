@@ -1,6 +1,7 @@
 #Import
 import re
 import sys
+import os
 import geoUI # GUI главного окна
 import dialog # Диалоговое окно
 
@@ -41,10 +42,32 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
         self.list_cities = []
         self.list_rows = []
         self.not_found_list = []
-        self.wb = load_workbook(filename = 'geo.xlsx')
+        self.files = os.listdir(path=".")
+        self.excel_file_name = 'geo.xlsx'
+        #поиск эксель файла и его использование если нет geo.xlsx,
+        self.check_excel_file()
+        self.wb = load_workbook(filename = self.excel_file_name)
         self.sheet = self.wb.get_sheet_by_name('Sheet1')
         self.excel_to_list()
         self.duble_words = 0
+
+    def check_excel_file(self):
+        try:
+            i = self.files.index(self.excel_file_name)
+        except ValueError:
+            z = 0
+            rash = []
+            for f in self.files:
+                z += 1
+                rash = f.split('.')
+                if len(rash) == 1:
+                    continue
+                if rash[1] == 'xlsx':
+                    self.excel_file_name = rash[0] + '.' + rash[1]
+                    print(self.excel_file_name)
+                    print (z)
+
+                    #добавить условие если вообще нет файла
 
     #считываем эксель файл и записываем названия городов в список all_cities
     def excel_to_list(self):
