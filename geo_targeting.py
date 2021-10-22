@@ -45,6 +45,7 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
         self.files = os.listdir(path=".")
         self.excel_file_name = 'geo.xlsx'
         #поиск эксель файла и его использование если нет geo.xlsx,
+        #выбор файла или закрытие программы
         self.check_excel_file()
         self.wb = load_workbook(filename = self.excel_file_name)
         self.sheet = self.wb.get_sheet_by_name('Sheet1')
