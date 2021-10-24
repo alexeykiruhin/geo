@@ -47,8 +47,15 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
         #поиск эксель файла и его использование если нет geo.xlsx,
         #выбор файла или закрытие программы
         self.check_excel_file()
-        self.wb = load_workbook(filename = self.excel_file_name)
-        self.sheet = self.wb.get_sheet_by_name('Sheet1')
+        try:
+            self.wb = load_workbook(filename = self.excel_file_name)
+        except FileNotFoundError as e:
+            print('Файл не найден')
+        #self.sheet = self.wb.get_sheet_by_name('Sheet1')
+        self.sheet = self.wb.worksheets[0]
+        #количество строк в екселе
+        self.row_count = self.sheet.max_row
+        print(self.row_count)
         self.excel_to_list()
         self.duble_words = 0
 
@@ -68,11 +75,11 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                     print(self.excel_file_name)
                     print (z)
 
-                    #добавить условие если вообще нет файла
+            #добавить условие если вообще нет файла
 
     #считываем эксель файл и записываем названия городов в список all_cities
     def excel_to_list(self):
-        for i in range(2, 1257): # если файл меняется надо посчитать количество строк в екселе и заменить 1257
+        for i in range(2, self.row_count + 1):
             self.all_cities.append(self.get_cell(i-2, 2))
 
     #обработка введенных данных (названия городов) и запись в список list_cities
@@ -207,19 +214,18 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                 continue
             self.id.insertPlainText(str(id) + ',')
             search_count += 1
-
+        #список ненайденых городов
         self.not_found.insertPlainText(self.nf_list_to_str(self.not_found_list))
+        #добавляем цифру найденных или ненайденных городов и их айди
         self.label.setText('Cities:' + ' ' + str(len(self.list_cities)))
-        self.label_2.setText('Id:' + ' ' + str(search_count))#количество найденных
-        self.label_3.setText('Сities not found:' + ' ' + str(len(self.not_found_list)))#количество ненайденных вывод в отдельное окно
+        self.label_2.setText('Id:' + ' ' + str(search_count))
+        self.label_3.setText('Сities not found:' + ' ' + str(len(self.not_found_list)))
 
     def nf_list_to_str(self, nf_list):
-            print('nf_list')
-            print(nf_list)
-            not_found_str = ''
-            for nf in nf_list:
-                not_found_str += nf + ' '
-            return not_found_str
+        not_found_str = ''
+        for nf in nf_list:
+            not_found_str += nf + ' '
+        return not_found_str
 
     def clear_fields(self):
         self.cities.clear()
@@ -229,7 +235,7 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
     def id_to_name(self, id):
         all_id = []
         #создаем список всех айди
-        for i in range(2, 1257): # если файл меняется надо посчитать количество строк в екселе и заменить 1257
+        for i in range(2, self.row_count + 1):
             all_id.append(self.get_cell(i-2, 1))
 
         row = all_id.index(id)
