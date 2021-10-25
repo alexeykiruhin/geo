@@ -8,7 +8,10 @@ import dialog # Диалоговое окно
 from PyQt5 import QtWidgets
 from openpyxl import load_workbook
 
-#Москва и Питер реализовать чекбокс с областями или без
+#Москва и Питер реализовать чекбокс с областями или без если с областями то
+#москва 12 и 13 а питер 28 33, если без областей то 700 и 753
+
+
 
 class Dialog(QtWidgets.QDialog, dialog.Ui_Dialog):
     def __init__(self):
@@ -86,7 +89,7 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
     def get_list_cities(self):
         # убираем лишние знаки, если список городов ввели через запятую
         #cities - название поля в GUI
-        reg = " |,"
+        reg = " |,|\n"
 
         cit = self.cities.toPlainText().title()
         self.list_cities = re.split(reg, cit)
@@ -103,9 +106,24 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
         except ValueError:
             #обработка события когда город последний в списке и он не нашёлся то в х будет ошибка
             #т.к. тут -  self.list_cities[self.list_cities.index(search) + 1] ничего не будет IndexError
+            #print(self.list_cities.index(search) + 1)
             try:
-                x = self.list_cities[self.list_cities.index(search)] + ' '\
-                 + self.list_cities[self.list_cities.index(search) + 1]
+                if self.list_cities[self.list_cities.index(search) + 1] == 'Область':
+                    x = self.list_cities[self.list_cities.index(search)] + ' обл.'
+                elif self.list_cities[self.list_cities.index(search) + 1] == 'Округ':
+                    x = self.list_cities[self.list_cities.index(search)] + ' округ'
+                elif self.list_cities[self.list_cities.index(search) + 1] == 'Край':
+                    x = self.list_cities[self.list_cities.index(search)] + ' край'
+                elif self.list_cities[self.list_cities.index(search) + 1] == 'Автономный':
+                    x = self.list_cities[self.list_cities.index(search)] + ' АО'
+                    index = self.list_cities.index(search) + 2
+                    self.list_cities.pop(index)
+                elif self.list_cities[self.list_cities.index(search)] == 'Республика'\
+                 or self.list_cities[self.list_cities.index(search)] == 'Респ':
+                    x = 'Респ. ' + self.list_cities[self.list_cities.index(search) + 1]
+                else:
+                    x = self.list_cities[self.list_cities.index(search)] + ' '\
+                     + self.list_cities[self.list_cities.index(search) + 1]
             except IndexError:
                 if search == '':
                     return -1
@@ -118,7 +136,7 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
             try:
                 num_row = self.all_cities.index(x)
             except ValueError:
-                if search == '':
+                if search == '' or search == 'Округ' or search == 'И' or search == 'Область':
                     return -1
                 self.not_found_list.append(search)
                 return -1
@@ -153,9 +171,9 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                 return self.get_cell(num_row, 1)
             else:
                 if (self.region.checkState() == 2 and self.get_cell(num_row, 2) == 'Москва'):
-                    return 12
+                    return '12,13'
                 elif (self.region.checkState() == 2 and self.get_cell(num_row, 2) == 'Санкт-Петербург'):
-                    return 33
+                    return '28,33'
                 elif (self.region.checkState() == 0 and self.get_cell(num_row, 2) == 'Москва'):
                     return 700
                 elif (self.region.checkState() == 0 and self.get_cell(num_row, 2) == 'Санкт-Петербург'):
@@ -212,8 +230,12 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
             id = self.duplicate_check(i) #возвращать флаг что город не найден и перейти к следующиму шагу
             if id == -1:
                 continue
-            self.id.insertPlainText(str(id) + ',')
-            search_count += 1
+            if type(id) is str:
+                self.id.insertPlainText(id + ',')
+                search_count += 2
+            else:
+                self.id.insertPlainText(str(id) + ',')
+                search_count += 1
         #список ненайденых городов
         self.not_found.insertPlainText(self.nf_list_to_str(self.not_found_list))
         #добавляем цифру найденных или ненайденных городов и их айди
