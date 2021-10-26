@@ -114,7 +114,8 @@ class App(QtWidgets.QMainWindow, geoUI.Ui_MainWindow):
                     x = self.list_cities[self.list_cities.index(search)] + ' округ'
                 elif self.list_cities[self.list_cities.index(search) + 1] == 'Край':
                     x = self.list_cities[self.list_cities.index(search)] + ' край'
-                elif self.list_cities[self.list_cities.index(search) + 1] == 'Автономный':
+                elif self.list_cities[self.list_cities.index(search) + 1] == 'Автономный'\
+                 or self.list_cities[self.list_cities.index(search) + 1] == 'Автономная':
                     x = self.list_cities[self.list_cities.index(search)] + ' АО'
                     index = self.list_cities.index(search) + 2
                     self.list_cities.pop(index)
